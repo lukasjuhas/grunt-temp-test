@@ -54,10 +54,11 @@ module.exports = function(grunt) {
       // grunt server settings
       connect: {
          options: {
-            port: 9000,
+            port: 8000,
             // Change this to '0.0.0.0' to access the server from outside.
             hostname: 'localhost',
-            livereload: 35729
+            // change this port to prevent error
+            livereload: 99999
          },
          livereload: {
             options: {
@@ -167,6 +168,46 @@ module.exports = function(grunt) {
             options: {
                debugInfo: true
             }
+         }
+      },
+
+      // Renames files for browser caching purposes
+      filerev: {
+         dist: {
+            src: [
+               '<%= Config.dist %>/scripts/{,*/}*.js',
+               '<%= Config.dist %>/styles/{,*/}*.css',
+               '<%= Config.dist %>/images/{,*/}*.{png,jpg,jpeg,gif,webp,svg}',
+               '<%= Config.dist %>/styles/fonts/*'
+            ]
+         }
+      },
+
+      // Reads HTML for usemin blocks to enable smart builds that automatically
+      // concat, minify and revision files. Creates configurations in memory so
+      // additional tasks can operate on them
+      useminPrepare: {
+         html: '<%= Config.app %>/index.html',
+         options: {
+            dest: '<%= Config.dist %>',
+            flow: {
+               html: {
+                  steps: {
+                     js: ['concat', 'uglifyjs'],
+                     css: ['cssmin']
+                  },
+                  post: {}
+               }
+            }
+         }
+      },
+
+      // Performs rewrites based on filerev and the useminPrepare configuration
+      usemin: {
+         html: ['<%= Config.dist %>/{,*/}*.html'],
+         css: ['<%= Config.dist %>/styles/{,*/}*.css'],
+         options: {
+            assetsDirs: ['<%= Config.dist %>','<%= Config.dist %>/images']
          }
       },
 
@@ -283,12 +324,10 @@ module.exports = function(grunt) {
       'concat',
       'ngAnnotate',
       'copy:dist',
-      'cdnify',
       'cssmin',
       'uglify',
       'filerev',
-      'usemin',
-      'htmlmin'
+      'usemin'
    ]);
 
 };
